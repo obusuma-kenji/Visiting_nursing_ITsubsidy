@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訪問看護ICT導入補助金活用ナビ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Subtle Accents -->
+    <!-- Application Structure Plan: A task-oriented, single-page dashboard. The structure is designed to guide the user through a decision-making process: 1. Understand the options (Subsidy Comparison), 2. See the financial impact (Simulator), 3. Know the next steps (Application Process). This non-linear, user-centric flow is more effective than mirroring the report's chapter structure, as it directly addresses the user's primary goals and questions, facilitating quicker comprehension and action. -->
+    <!-- Visualization & Content Choices: 
+        - Goal: Compare subsidies. Method: Interactive Tabbed Interface & Comparison Table. Interaction: User clicks tabs to switch between detailed views of each subsidy. Justification: Allows for easy, side-by-side comparison of complex, multi-faceted information, which is superior to a long, scrolling text block. Library: Tailwind CSS for tabs.
+        - Goal: Show financial impact. Method: Dynamic Bar Chart & Input Sliders. Interaction: User adjusts sliders for software/hardware costs, and the chart updates in real-time to show the subsidy amount and net cost. Justification: Transforms abstract numbers from the report into a personalized, tangible outcome, making the benefit of the subsidies immediately clear. Library: Chart.js for the dynamic chart.
+        - Goal: Guide the user. Method: Stepped Process Diagram. Interaction: Static visual guide. Justification: Simplifies the complex, multi-phase application process into a clear, easy-to-follow visual roadmap, reducing user anxiety about the procedure. Library: HTML/Tailwind CSS.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .tab-active {
+            border-color: #D97706;
+            color: #D97706;
+            background-color: #FFFBEB;
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #6B7280;
+        }
+        .step-circle {
+            background-color: #FBBF24;
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">訪問看護ICT導入補助金活用ナビ</h1>
+            <p class="text-md text-gray-600">カイポケとタブレット導入に最適な補助金を見つけましょう</p>
+        </header>
+
+        <main>
+            <!-- Navigation -->
+            <nav class="flex justify-center mb-12">
+                <a href="#section-comparison" class="text-center mx-2 sm:mx-4 px-3 py-2 rounded-lg hover:bg-amber-100 transition">
+                    <div class="text-2xl sm:text-3xl mb-1">🔍</div>
+                    <span class="text-sm sm:text-base font-semibold text-gray-700">補助金を知る</span>
+                </a>
+                <a href="#section-simulator" class="text-center mx-2 sm:mx-4 px-3 py-2 rounded-lg hover:bg-amber-100 transition">
+                    <div class="text-2xl sm:text-3xl mb-1">🧮</div>
+                    <span class="text-sm sm:text-base font-semibold text-gray-700">費用を試算する</span>
+                </a>
+                <a href="#section-process" class="text-center mx-2 sm:mx-4 px-3 py-2 rounded-lg hover:bg-amber-100 transition">
+                    <div class="text-2xl sm:text-3xl mb-1">🗺️</div>
+                    <span class="text-sm sm:text-base font-semibold text-gray-700">申請の流れ</span>
+                </a>
+            </nav>
+
+
+            <!-- Section 1: Subsidy Comparison -->
+            <section id="section-comparison" class="mb-16 scroll-mt-20">
+                <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">2つの主要な補助金制度</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">あなたの事業所の優先順位に合わせて、最適な補助金制度を比較検討しましょう。タブレット購入を重視するなら「ICT導入支援事業」、申請の手軽さを求めるなら「IT導入補助金」が有力な選択肢です。</p>
+
+                <div class="max-w-4xl mx-auto">
+                    <div class="mb-6 border-b border-gray-200">
+                        <nav class="flex -mb-px" aria-label="Tabs">
+                            <button id="tab-it" class="flex-1 text-center py-4 px-1 border-b-2 font-medium text-sm sm:text-base transition-colors duration-200 ease-in-out tab-active">IT導入補助金</button>
+                            <button id="tab-ict" class="flex-1 text-center py-4 px-1 border-b-2 font-medium text-sm sm:text-base transition-colors duration-200 ease-in-out tab-inactive">ICT導入支援事業</button>
+                        </nav>
+                    </div>
+
+                    <div id="content-it" class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-bold text-xl mb-3 text-amber-700">IT導入補助金 (経済産業省)</h3>
+                        <p class="mb-4 text-gray-700">全国統一のルールで、申請プロセスの分かりやすさが魅力。カイポケ提供元などの「IT導入支援事業者」による手厚いサポートを受けられるため、申請の事務負担を軽減したい事業所に最適です。</p>
+                        <div class="grid md:grid-cols-2 gap-4 text-sm">
+                            <div class="bg-amber-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">🎯 主な目的</h4>
+                                <p>企業の生産性向上、DX推進</p>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">💻 ハードウェア(タブレット)</h4>
+                                <p><span class="font-bold text-red-600">インボイス枠でのみ対象。</span>通常枠では対象外。</p>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">🤝 申請プロセス</h4>
+                                <p>ベンダー主導。カイポケのサポートチームと連携して申請。</p>
+                            </div>
+                            <div class="bg-amber-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">🗓️ 公募期間</h4>
+                                <p>年間を通じて複数回の締切があり、柔軟な申請が可能。</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                             <a href="https://www.it-hojo.jp/" target="_blank" class="text-amber-600 hover:text-amber-800 font-semibold text-sm">公式サイトで詳細を確認する &rarr;</a>
+                        </div>
+                    </div>
+
+                    <div id="content-ict" class="hidden bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="font-bold text-xl mb-3 text-sky-700">ICT導入支援事業 (厚生労働省/都道府県)</h3>
+                        <p class="mb-4 text-gray-700">介護現場の負担軽減に特化した制度。タブレット購入費が明確に補助対象で、補助率も高い傾向にあります。複数台のタブレット導入を最優先する事業所に最適ですが、地域差が大きい点に注意が必要です。</p>
+                        <div class="grid md:grid-cols-2 gap-4 text-sm">
+                            <div class="bg-sky-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">🎯 主な目的</h4>
+                                <p>介護職員の業務負担軽減、職場環境改善</p>
+                            </div>
+                            <div class="bg-sky-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">💻 ハードウェア(タブレット)</h4>
+                                <p><span class="font-bold text-green-600">主要な補助対象。</span>Wi-Fi整備なども対象に。</p>
+                            </div>
+                            <div class="bg-sky-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">🏢 申請プロセス</h4>
+                                <p>事業者主導。所在地の都道府県へ直接申請。</p>
+                            </div>
+                             <div class="bg-sky-50 p-4 rounded-lg">
+                                <h4 class="font-semibold text-gray-800 mb-1">🗓️ 公募期間</h4>
+                                <p>年1〜2回と限定的。締切を逃すと翌年になる可能性。</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+                            <h4 class="font-bold text-red-800">最重要確認事項</h4>
+                            <p class="text-sm text-red-700">申請前に、必ず所在地の都道府県担当部署に「訪問看護事業所が対象か」を直接確認してください。地域によっては対象外の場合があります。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Cost Simulator -->
+            <section id="section-simulator" class="mb-16 scroll-mt-20">
+                <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">導入費用シミュレーター</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">カイポケとタブレットの導入費用が、補助金でどれだけ軽減されるか試算してみましょう。下のスライダーを動かして、あなたの事業所の導入計画に合わせた自己負担額を確認できます。</p>
+                
+                <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <div class="mb-6">
+                                <label for="software-cost" class="block font-medium text-gray-700 mb-2">カイポケ費用 (2年分総額)</label>
+                                <input type="range" id="software-cost" min="0" max="1200000" step="50000" value="600000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="text-center font-bold text-lg text-amber-700 mt-2"><span id="software-cost-value">600,000</span>円</div>
+                            </div>
+                            <div class="mb-6">
+                                <label for="hardware-cost" class="block font-medium text-gray-700 mb-2">タブレット購入費用 (合計)</label>
+                                <input type="range" id="hardware-cost" min="0" max="1000000" step="40000" value="400000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                <div class="text-center font-bold text-lg text-sky-700 mt-2"><span id="hardware-cost-value">400,000</span>円</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="costChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Application Process -->
+            <section id="section-process" class="scroll-mt-20">
+                <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">申請から受給までの3ステップ</h2>
+                <p class="text-center text-gray-600 mb-10 max-w-2xl mx-auto">補助金の申請は計画的な準備が成功の鍵です。以下の3つのフェーズに沿って、着実に手続きを進めましょう。</p>
+
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid md:grid-cols-3 gap-4 text-center">
+                        
+                        <!-- Step 1 -->
+                        <div class="p-6 bg-white rounded-lg shadow-md border-t-4 border-amber-400">
+                            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full step-circle font-bold text-xl">1</div>
+                            <h3 class="text-lg font-semibold mb-2 text-gray-800">フェーズ1: 申請前の準備</h3>
+                            <ul class="text-left text-sm text-gray-600 list-disc pl-5 space-y-2">
+                                <li class="font-bold">gBizIDプライムの取得 (最優先)</li>
+                                <li>事業計画の策定 (目標の数値化)</li>
+                                <li>ベンダー/都道府県への相談・確認</li>
+                                <li>正式な見積書の取得</li>
+                            </ul>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="p-6 bg-white rounded-lg shadow-md border-t-4 border-amber-400">
+                             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full step-circle font-bold text-xl">2</div>
+                            <h3 class="text-lg font-semibold mb-2 text-gray-800">フェーズ2: 申請書の作成・提出</h3>
+                            <ul class="text-left text-sm text-gray-600 list-disc pl-5 space-y-2">
+                                <li>申請様式への正確な記入</li>
+                                <li>添付書類の準備 (登記簿謄本など)</li>
+                                <li>指定された方法で期限内に提出</li>
+                            </ul>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="p-6 bg-white rounded-lg shadow-md border-t-4 border-amber-400">
+                             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full step-circle font-bold text-xl">3</div>
+                            <h3 class="text-lg font-semibold mb-2 text-gray-800">フェーズ3: 採択後の手続き</h3>
+                            <ul class="text-left text-sm text-gray-600 list-disc pl-5 space-y-2">
+                                <li class="font-bold text-red-600">交付決定通知後に契約・発注</li>
+                                <li>計画に沿った導入と支払い</li>
+                                <li>実績報告書の提出 (領収書等添付)</li>
+                                <li>補助金の受領 (後払い)</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-16 pt-8 border-t border-gray-200">
+            <p class="text-sm text-gray-500">&copy; 2025 訪問看護ICT導入補助金活用ナビ. この情報は提供されたレポートに基づき作成されています。</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabIt = document.getElementById('tab-it');
+            const tabIct = document.getElementById('tab-ict');
+            const contentIt = document.getElementById('content-it');
+            const contentIct = document.getElementById('content-ict');
+
+            function switchTab(activeTab, inactiveTab, activeContent, inactiveContent) {
+                activeTab.classList.remove('tab-inactive');
+                activeTab.classList.add('tab-active');
+                inactiveTab.classList.remove('tab-active');
+                inactiveTab.classList.add('tab-inactive');
+                activeContent.classList.remove('hidden');
+                inactiveContent.classList.add('hidden');
+            }
+
+            tabIt.addEventListener('click', () => switchTab(tabIt, tabIct, contentIt, contentIct));
+            tabIct.addEventListener('click', () => switchTab(tabIct, tabIt, contentIct, contentIt));
+
+            // Chart.js Simulator
+            const softwareCostSlider = document.getElementById('software-cost');
+            const hardwareCostSlider = document.getElementById('hardware-cost');
+            const softwareCostValue = document.getElementById('software-cost-value');
+            const hardwareCostValue = document.getElementById('hardware-cost-value');
+
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            const formatNumber = (num) => new Intl.NumberFormat('ja-JP').format(num);
+
+            let costChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['IT導入補助金(インボイス枠)', 'ICT導入支援事業(例)'],
+                    datasets: [{
+                        label: '自己負担額',
+                        data: [0, 0],
+                        backgroundColor: ['#FBBF24', '#7DD3FC'],
+                        borderColor: ['#D97706', '#0369A1'],
+                        borderWidth: 1
+                    }, {
+                        label: '補助額',
+                        data: [0, 0],
+                        backgroundColor: ['#FEF3C7', '#E0F2FE'],
+                        borderColor: ['#FBBF24', '#7DD3FC'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value / 10000 + '万円';
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '補助金別 自己負担額シミュレーション'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += formatNumber(context.parsed.x) + '円';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            function updateChart() {
+                const swCost = parseInt(softwareCostSlider.value);
+                const hwCost = parseInt(hardwareCostSlider.value);
+                
+                softwareCostValue.textContent = formatNumber(swCost);
+                hardwareCostValue.textContent = formatNumber(hwCost);
+
+                // IT導入補助金 (インボイス枠) 計算ロジック
+                let itSubsidySoftware = 0;
+                if (swCost <= 500000) {
+                    itSubsidySoftware = swCost * (4/5);
+                } else {
+                    itSubsidySoftware = (500000 * (4/5)) + ((swCost - 500000) * (2/3));
+                }
+                const itSubsidyHardware = Math.min(hwCost * 0.5, 100000); // 上限10万円
+                const totalItSubsidy = itSubsidySoftware + itSubsidyHardware;
+                const itNetCost = (swCost + hwCost) - totalItSubsidy;
+
+                // ICT導入支援事業 計算ロジック (例として補助率3/4、上限100万円で計算)
+                const totalIctCost = swCost + hwCost;
+                const ictSubsidy = Math.min(totalIctCost * (3/4), 1000000); // 上限100万円
+                const ictNetCost = totalIctCost - ictSubsidy;
+
+                costChart.data.datasets[0].data = [itNetCost, ictNetCost];
+                costChart.data.datasets[1].data = [totalItSubsidy, ictSubsidy];
+                costChart.update();
+            }
+
+            softwareCostSlider.addEventListener('input', updateChart);
+            hardwareCostSlider.addEventListener('input', updateChart);
+            
+            updateChart(); // Initial chart render
+        });
+    </script>
+</body>
+</html>
